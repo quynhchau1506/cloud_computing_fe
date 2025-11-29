@@ -34,7 +34,15 @@
         class="category-card"
         @click="viewCategory(category._id)"
       >
-        <div class="category-icon">📂</div>
+        <div class="category-image-wrapper">
+          <img
+            v-if="category.imageUrl"
+            :src="category.imageUrl"
+            :alt="category.name"
+            class="category-image"
+          />
+          <div v-else class="category-icon">📂</div>
+        </div>
         <h2 class="category-name">{{ category.name }}</h2>
         <p class="category-description">
           {{ category.description || 'Khám phá tin tức trong danh mục này' }}
@@ -208,9 +216,30 @@ onMounted(() => {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
 }
 
+.category-image-wrapper {
+  width: 100%;
+  height: 180px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.category-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover .category-image {
+  transform: scale(1.1);
+}
+
 .category-icon {
   font-size: 64px;
-  margin-bottom: 20px;
   animation: bounce 2s ease-in-out infinite;
 }
 

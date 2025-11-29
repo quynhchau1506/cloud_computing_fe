@@ -29,7 +29,20 @@ export const categoryService = {
   // Admin APIs
   async createCategory(data) {
     try {
-      const response = await api.post('/admin/categories', data)
+      const formData = new FormData()
+      formData.append('name', data.name)
+      formData.append('description', data.description || '')
+      
+      // Append image if exists
+      if (data.image) {
+        formData.append('image', data.image)
+      }
+
+      const response = await api.post('/admin/categories', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       console.log('✅ Category Created:', response.data)
       return response.data
     } catch (error) {
@@ -40,7 +53,20 @@ export const categoryService = {
 
   async updateCategory(id, data) {
     try {
-      const response = await api.put(`/admin/categories/${id}`, data)
+      const formData = new FormData()
+      formData.append('name', data.name)
+      formData.append('description', data.description || '')
+      
+      // Append image if new image selected
+      if (data.image instanceof File) {
+        formData.append('image', data.image)
+      }
+
+      const response = await api.put(`/admin/categories/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       console.log('✅ Category Updated:', response.data)
       return response.data
     } catch (error) {
