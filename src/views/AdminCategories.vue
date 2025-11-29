@@ -49,7 +49,15 @@
     <div v-else class="categories-grid">
       <div v-for="category in categories" :key="category._id" class="category-card">
         <div class="category-header">
-          <div class="category-icon">📂</div>
+          <div class="category-icon-wrapper">
+            <img
+              v-if="category.imageUrl"
+              :src="category.imageUrl"
+              alt="Category"
+              class="category-image"
+            />
+            <div v-else class="category-icon">📂</div>
+          </div>
           <div class="category-actions">
             <button @click="editCategory(category)" class="btn-icon" title="Chỉnh sửa">
               <svg
@@ -100,6 +108,30 @@
               placeholder="Nhập mô tả cho danh mục (tùy chọn)"
               rows="4"
             ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Ảnh đại diện</label>
+            <input
+              type="file"
+              @change="handleImageChange"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+            />
+            <small>Chấp nhận: JPG, PNG, WEBP, GIF. Tối đa 5MB</small>
+
+            <!-- Image Preview -->
+            <div v-if="imagePreview" class="image-preview">
+              <img :src="imagePreview" alt="Preview" />
+              <button type="button" @click="removeImage" class="btn-remove-image">
+                ✕ Xóa ảnh
+              </button>
+            </div>
+
+            <!-- Current Image -->
+            <div v-else-if="editingCategory && editingCategory.imageUrl" class="current-image">
+              <img :src="editingCategory.imageUrl" alt="Current" />
+              <p>Ảnh hiện tại</p>
+            </div>
           </div>
 
           <div class="modal-footer">
@@ -153,7 +185,10 @@ const error = ref('')
 const formData = ref({
   name: '',
   description: '',
+  image: null,
 })
+
+const imagePreview = ref(null)
 
 const loadCategories = async () => {
   try {
@@ -169,7 +204,9 @@ const editCategory = (category) => {
   formData.value = {
     name: category.name,
     description: category.description || '',
+    image: null,
   }
+  imagePreview.value = null
 }
 
 const confirmDelete = (category) => {
@@ -214,8 +251,43 @@ const closeModal = () => {
   formData.value = {
     name: '',
     description: '',
+    image: null,
   }
+  imagePreview.value = null
   error.value = ''
+}
+
+const handleImageChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Kích thước file không được vượt quá 5MB')
+      event.target.value = ''
+      return
+    }
+
+    // Validate file type
+    if (!file.type.match(/image\/(jpeg|jpg|png|webp|gif)/)) {
+      alert('Chỉ chấp nhận file ảnh JPG, PNG, WEBP, GIF')
+      event.target.value = ''
+      return
+    }
+
+    formData.value.image = file
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const removeImage = () => {
+  formData.value.image = null
+  imagePreview.value = null
 }
 
 const formatDate = (date) => {
@@ -584,6 +656,67 @@ onMounted(() => {
 .form-group textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+.form-group small {
+  display: block;
+  color: #666;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.image-preview,
+.current-image {
+  margin-top: 15px;
+  position: relative;
+}
+
+.image-preview img,
+.current-image img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  display: block;
+  object-fit: cover;
+}
+
+.current-image p {
+  margin-top: 8px;
+  color: #666;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.btn-remove-image {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #f5576c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-remove-image:hover {
+  background: #dc3545;
+  transform: translateY(-2px);
+}
+
+.category-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .modal-footer {

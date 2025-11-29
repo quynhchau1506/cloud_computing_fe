@@ -19,7 +19,15 @@
 
     <!-- Category Header -->
     <div v-if="category" class="category-header">
-      <div class="category-icon">📂</div>
+      <div class="category-banner">
+        <img
+          v-if="category.imageUrl"
+          :src="category.imageUrl"
+          :alt="category.name"
+          class="category-banner-image"
+        />
+        <div v-else class="category-icon">📂</div>
+      </div>
       <h1 class="category-title">{{ category.name }}</h1>
       <p class="category-description">
         {{ category.description || 'Khám phá tin tức trong danh mục này' }}
@@ -221,9 +229,27 @@ onMounted(() => {
   }
 }
 
+.category-banner {
+  width: 100%;
+  max-width: 600px;
+  height: 300px;
+  margin: 0 auto 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.category-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .category-icon {
   font-size: 80px;
-  margin-bottom: 20px;
 }
 
 .category-title {
@@ -345,6 +371,7 @@ onMounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   overflow: hidden;
 }
 
