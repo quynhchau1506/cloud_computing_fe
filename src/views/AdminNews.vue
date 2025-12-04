@@ -5,7 +5,7 @@
         <h2>📰 Quản lý Tin tức</h2>
         <p>Tạo và quản lý các tin tức</p>
       </div>
-      <button @click="showCreateModal = true" class="btn-primary">
+      <button @click="goToCreate" class="btn-primary">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -73,7 +73,7 @@
         <polyline points="14 2 14 8 20 8"></polyline>
       </svg>
       <p>Chưa có tin tức nào</p>
-      <button @click="showCreateModal = true" class="btn-secondary">Tạo tin tức đầu tiên</button>
+      <button @click="goToCreate" class="btn-secondary">Tạo tin tức đầu tiên</button>
     </div>
 
     <div v-else class="news-grid">
@@ -81,7 +81,7 @@
         <div class="news-card-header">
           <span class="category-tag">{{ news.category?.name || 'N/A' }}</span>
           <div class="news-actions">
-            <button @click="editNews(news)" class="btn-icon" title="Chỉnh sửa">
+            <button @click="goToEdit(news._id)" class="btn-icon" title="Chỉnh sửa">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -105,64 +105,6 @@
           <span class="author">👤 {{ news.author }}</span>
           <span class="date">📅 {{ formatDate(news.publishedDate) }}</span>
         </div>
-      </div>
-    </div>
-
-    <!-- Create/Edit Modal -->
-    <div v-if="showCreateModal || editingNews" class="modal-overlay" @click.self="closeModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>{{ editingNews ? '✏️ Chỉnh sửa tin tức' : '➕ Thêm tin tức mới' }}</h3>
-          <button @click="closeModal" class="btn-close">&times;</button>
-        </div>
-
-        <form @submit.prevent="handleSubmit" class="modal-body">
-          <div v-if="error" class="error-message">{{ error }}</div>
-
-          <div class="form-group">
-            <label>Tiêu đề *</label>
-            <input
-              type="text"
-              v-model="formData.title"
-              placeholder="Nhập tiêu đề tin tức"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Nội dung *</label>
-            <textarea
-              v-model="formData.content"
-              placeholder="Nhập nội dung tin tức"
-              rows="6"
-              required
-            ></textarea>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Tác giả *</label>
-              <input type="text" v-model="formData.author" placeholder="Tên tác giả" required />
-            </div>
-
-            <div class="form-group">
-              <label>Danh mục *</label>
-              <select v-model="formData.category" required>
-                <option value="">Chọn danh mục</option>
-                <option v-for="cat in categories" :key="cat._id" :value="cat._id">
-                  {{ cat.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" @click="closeModal" class="btn-secondary">Hủy</button>
-            <button type="submit" class="btn-primary" :disabled="submitting">
-              {{ submitting ? 'Đang lưu...' : editingNews ? 'Cập nhật' : 'Tạo mới' }}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
 
@@ -192,27 +134,20 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { newsService } from '@/services/news.service'
 import { categoryService } from '@/services/category.service'
+
+const router = useRouter()
 
 const newsList = ref([])
 const categories = ref([])
 const loading = ref(true)
-const showCreateModal = ref(false)
-const editingNews = ref(null)
 const deletingNews = ref(null)
 const submitting = ref(false)
-const error = ref('')
 const searchQuery = ref('')
 const filterCategory = ref('')
 let searchTimeout = null
-
-const formData = ref({
-  title: '',
-  content: '',
-  author: '',
-  category: '',
-})
 
 const loadNews = async () => {
   try {
@@ -256,37 +191,16 @@ const handleFilter = () => {
   loadNews()
 }
 
-const editNews = (news) => {
-  editingNews.value = news
-  formData.value = {
-    title: news.title,
-    content: news.content,
-    author: news.author,
-    category: news.category?._id || news.category,
-  }
+const goToCreate = () => {
+  router.push('/admin/news/create')
+}
+
+const goToEdit = (id) => {
+  router.push(`/admin/news/edit/${id}`)
 }
 
 const confirmDelete = (news) => {
   deletingNews.value = news
-}
-
-const handleSubmit = async () => {
-  error.value = ''
-  submitting.value = true
-
-  try {
-    if (editingNews.value) {
-      await newsService.updateNews(editingNews.value._id, formData.value)
-    } else {
-      await newsService.createNews(formData.value)
-    }
-    closeModal()
-    loadNews()
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Có lỗi xảy ra'
-  } finally {
-    submitting.value = false
-  }
 }
 
 const handleDelete = async () => {
@@ -300,18 +214,6 @@ const handleDelete = async () => {
   } finally {
     submitting.value = false
   }
-}
-
-const closeModal = () => {
-  showCreateModal.value = false
-  editingNews.value = null
-  formData.value = {
-    title: '',
-    content: '',
-    author: '',
-    category: '',
-  }
-  error.value = ''
 }
 
 const formatDate = (date) => {
@@ -609,7 +511,7 @@ onBeforeUnmount(() => {
   color: #999;
 }
 
-/* Modal Styles */
+/* Delete Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -638,16 +540,8 @@ onBeforeUnmount(() => {
   background: white;
   border-radius: 16px;
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  animation: slideUpModal 0.3s ease-out;
-}
-
-.modal-small {
   max-width: 450px;
+  animation: slideUpModal 0.3s ease-out;
 }
 
 @keyframes slideUpModal {
@@ -675,82 +569,8 @@ onBeforeUnmount(() => {
   color: #333;
 }
 
-.btn-close {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f7fa;
-  border: none;
-  border-radius: 8px;
-  font-size: 24px;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-close:hover {
-  background: #e0e0e0;
-  transform: rotate(90deg);
-}
-
 .modal-body {
   padding: 24px;
-  overflow-y: auto;
-}
-
-.error-message {
-  background: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  border: 1px solid #fcc;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
-  box-sizing: border-box;
-  font-family: inherit;
-}
-
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
 }
 
 .modal-footer {
@@ -768,10 +588,6 @@ onBeforeUnmount(() => {
   }
 
   .news-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-row {
     grid-template-columns: 1fr;
   }
 

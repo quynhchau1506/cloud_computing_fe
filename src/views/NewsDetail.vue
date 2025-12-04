@@ -67,11 +67,7 @@
       <div class="divider"></div>
 
       <!-- Content -->
-      <div class="article-content">
-        <p v-for="(paragraph, index) in formatContent(news.content)" :key="index">
-          {{ paragraph }}
-        </p>
-      </div>
+      <div class="article-content" v-html="news.content"></div>
     </article>
 
     <!-- Related Section -->
@@ -173,15 +169,11 @@ const formatDate = (date) => {
   })
 }
 
-const formatContent = (content) => {
-  if (!content) return []
-  // Split by newlines or periods to create paragraphs
-  return content.split(/\n+/).filter((p) => p.trim())
-}
-
 const truncateText = (text, length) => {
   if (!text) return ''
-  return text.length > length ? text.substring(0, length) + '...' : text
+  // Strip HTML tags for preview
+  const stripped = text.replace(/<[^>]*>/g, '')
+  return stripped.length > length ? stripped.substring(0, length) + '...' : stripped
 }
 
 onMounted(() => {
@@ -300,13 +292,137 @@ onMounted(() => {
   color: #444;
 }
 
-.article-content p {
+/* CKEditor Content Styles */
+.article-content :deep(p) {
   margin: 0 0 24px 0;
   text-align: justify;
 }
 
-.article-content p:last-child {
+.article-content :deep(p:last-child) {
   margin-bottom: 0;
+}
+
+.article-content :deep(h1),
+.article-content :deep(h2),
+.article-content :deep(h3),
+.article-content :deep(h4),
+.article-content :deep(h5),
+.article-content :deep(h6) {
+  margin: 32px 0 16px 0;
+  color: #222;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.article-content :deep(h1) { font-size: 36px; }
+.article-content :deep(h2) { font-size: 32px; }
+.article-content :deep(h3) { font-size: 28px; }
+.article-content :deep(h4) { font-size: 24px; }
+.article-content :deep(h5) { font-size: 20px; }
+.article-content :deep(h6) { font-size: 18px; }
+
+.article-content :deep(ul),
+.article-content :deep(ol) {
+  margin: 0 0 24px 24px;
+  padding-left: 24px;
+}
+
+.article-content :deep(li) {
+  margin-bottom: 12px;
+}
+
+.article-content :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 24px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.article-content :deep(blockquote) {
+  border-left: 4px solid #667eea;
+  padding: 16px 24px;
+  margin: 24px 0;
+  background: #f5f7fa;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
+
+.article-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.article-content :deep(th),
+.article-content :deep(td) {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.article-content :deep(th) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.article-content :deep(tr:nth-child(even)) {
+  background: #f9f9f9;
+}
+
+.article-content :deep(code) {
+  background: #f5f7fa;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e83e8c;
+}
+
+.article-content :deep(pre) {
+  background: #2d2d2d;
+  color: #f8f8f2;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 24px 0;
+}
+
+.article-content :deep(pre code) {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.article-content :deep(a) {
+  color: #667eea;
+  text-decoration: none;
+  border-bottom: 1px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.article-content :deep(a:hover) {
+  color: #764ba2;
+  border-bottom-color: #764ba2;
+}
+
+.article-content :deep(strong) {
+  font-weight: 700;
+  color: #222;
+}
+
+.article-content :deep(em) {
+  font-style: italic;
+}
+
+.article-content :deep(hr) {
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin: 32px 0;
 }
 
 /* Related Section */
@@ -373,6 +489,7 @@ onMounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   overflow: hidden;
 }
 

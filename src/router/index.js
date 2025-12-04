@@ -14,6 +14,7 @@ import AdminRegister from '@/views/AdminRegister.vue'
 import AdminLayout from '@/views/AdminLayout.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import AdminNews from '@/views/AdminNews.vue'
+import NewsForm from '@/views/NewsForm.vue'
 import AdminCategories from '@/views/AdminCategories.vue'
 
 const router = createRouter({
@@ -74,6 +75,16 @@ const router = createRouter({
           path: 'news',
           name: 'admin-news',
           component: AdminNews,
+        },
+        {
+          path: 'news/create',
+          name: 'admin-news-create',
+          component: NewsForm,
+        },
+        {
+          path: 'news/edit/:id',
+          name: 'admin-news-edit',
+          component: NewsForm,
         },
         {
           path: 'categories',
