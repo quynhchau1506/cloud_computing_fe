@@ -235,7 +235,9 @@ const formatDate = (date) => {
 
 const truncateText = (text, length) => {
   if (!text) return ''
-  return text.length > length ? text.substring(0, length) + '...' : text
+  // Strip HTML tags for preview
+  const stripped = text.replace(/<[^>]*>/g, '')
+  return stripped.length > length ? stripped.substring(0, length) + '...' : stripped
 }
 
 onMounted(() => {
